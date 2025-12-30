@@ -2,10 +2,18 @@ import { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-import { prisma } from "@/lib/prisma"
+
+// Lazy import prisma to avoid build-time initialization issues
+let prismaInstance: any = null
+const getPrisma = () => {
+  if (!prismaInstance) {
+    prismaInstance = require("@/lib/prisma").prisma
+  }
+  return prismaInstance
+}
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
+  adapter: PrismaAdapter(getPrisma()) as NextAuthOptions["adapter"],
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -18,6 +26,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required")
         }
 
+        const prisma = getPrisma()
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         })
