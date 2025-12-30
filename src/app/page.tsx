@@ -119,12 +119,13 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                Your Trusted Online
-                <span className="text-orange-500"> Pharmacy</span>
+                India&apos;s Most Trusted
+                <span className="text-orange-500"> Online </span>
+                <span className="text-green-600">Pharmacy</span>
               </h1>
               <p className="text-gray-600 text-lg mb-6">
-                Order medicines online and get them delivered at your doorstep.
-                Upload your prescription and we&apos;ll take care of the rest.
+                Order genuine medicines online and get them delivered anywhere in India.
+                Upload your prescription and we&apos;ll take care of the rest. Serving Bharat with quality healthcare.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/upload-prescription">
@@ -335,7 +336,7 @@ export default function HomePage() {
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
-            Why Choose MediCare?
+            Why Choose MedsBharat?
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
@@ -354,8 +355,8 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-lg mb-2">Pan India Delivery</h3>
               <p className="text-gray-600 text-sm">
-                We deliver to all pincodes across India. Get your medicines
-                delivered at your doorstep.
+                We serve all of Bharat. Get your medicines delivered to any pincode
+                across India right at your doorstep.
               </p>
             </div>
             <div className="text-center">

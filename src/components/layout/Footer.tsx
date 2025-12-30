@@ -54,12 +54,15 @@ export default function Footer() {
           {/* Brand & Contact */}
           <div className="lg:col-span-1">
             <Link href="/" className="inline-block mb-4">
-              <span className="text-2xl font-bold text-white">MediCare</span>
-              <span className="text-xs text-gray-400 ml-1 block">Pharmacy</span>
+              <div className="flex items-center">
+                <span className="text-2xl font-bold text-orange-500">Meds</span>
+                <span className="text-2xl font-bold text-green-600">Bharat</span>
+              </div>
+              <span className="text-xs text-gray-400 block">India's Pharmacy</span>
             </Link>
             <p className="text-sm text-gray-400 mb-4">
-              Your trusted online pharmacy for medicines and healthcare products.
-              Get medicines delivered to your doorstep.
+              India's most trusted online pharmacy for genuine medicines and healthcare products.
+              Serving Bharat with quality healthcare delivered to your doorstep.
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
@@ -68,11 +71,11 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="h-4 w-4 text-orange-500" />
-                <span>support@medicare.com</span>
+                <span>support@medsbharat.com</span>
               </div>
               <div className="flex items-start gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-orange-500 mt-0.5" />
-                <span>Mumbai, Maharashtra, India</span>
+                <span>Serving All India</span>
               </div>
             </div>
           </div>
@@ -188,7 +191,7 @@ export default function Footer() {
       <div className="bg-gray-950 py-4">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-500">
-            <p>&copy; {new Date().getFullYear()} MediCare Pharmacy. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} MedsBharat.com. All rights reserved.</p>
             <p>
               Drug License No: XX-XXXX-XXXX | FSSAI License: XXXXXXXXXX
             </p>

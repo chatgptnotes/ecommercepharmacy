@@ -11,27 +11,29 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "MediCare Pharmacy - Online Medicine Delivery",
-    template: "%s | MediCare Pharmacy",
+    default: "MedsBharat - India's Trusted Online Pharmacy",
+    template: "%s | MedsBharat",
   },
   description:
-    "Order medicines online and get them delivered to your doorstep. Upload prescription, buy healthcare products, and enjoy great discounts on medicines.",
+    "Order medicines online from India's most trusted pharmacy. Get genuine medicines delivered to your doorstep. Upload prescription, buy healthcare products, and enjoy great discounts.",
   keywords: [
-    "online pharmacy",
+    "online pharmacy India",
     "medicine delivery",
     "buy medicines online",
     "healthcare products",
     "prescription upload",
     "pharmacy India",
+    "medsbharat",
+    "meds bharat",
   ],
-  authors: [{ name: "MediCare Pharmacy" }],
+  authors: [{ name: "MedsBharat" }],
   openGraph: {
-    title: "MediCare Pharmacy - Online Medicine Delivery",
+    title: "MedsBharat - India's Trusted Online Pharmacy",
     description:
-      "Order medicines online and get them delivered to your doorstep.",
+      "Order medicines online from India's most trusted pharmacy. Get genuine medicines delivered to your doorstep.",
     type: "website",
     locale: "en_IN",
-    siteName: "MediCare Pharmacy",
+    siteName: "MedsBharat",
   },
 }
 

@@ -81,8 +81,9 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-orange-500">MediCare</span>
-              <span className="text-xs text-gray-500 ml-1 hidden sm:block">Pharmacy</span>
+              <span className="text-2xl font-bold text-orange-500">Meds</span>
+              <span className="text-2xl font-bold text-green-600">Bharat</span>
+              <span className="text-xs text-gray-500 ml-2 hidden sm:block">India's Pharmacy</span>
             </div>
           </Link>
 
