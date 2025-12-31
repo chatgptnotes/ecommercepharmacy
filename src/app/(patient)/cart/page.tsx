@@ -181,12 +181,15 @@ export default function CartPage() {
               </Link>
 
               <div className="mt-6 pt-6 border-t">
-                <h3 className="font-semibold mb-2 text-sm">
-                  Order from: {pharmacyName}
+                <h3 className="font-semibold mb-2 text-sm flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-blue-600" />
+                  Smart Pharmacy Routing
                 </h3>
-                <p className="text-xs text-gray-600">
-                  All items in your cart are from the same pharmacy for faster
-                  delivery.
+                <p className="text-xs text-gray-600 mb-2">
+                  Our smart system automatically connects your order to the nearest available pharmacy with stock to ensure fastest delivery.
+                </p>
+                <p className="text-xs font-medium text-gray-900">
+                  Order from: {pharmacyName}
                 </p>
               </div>
             </Card>
