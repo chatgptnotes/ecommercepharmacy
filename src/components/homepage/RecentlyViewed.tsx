@@ -39,8 +39,7 @@ export function RecentlyViewed() {
                 strength: '',
                 genericName: '',
                 mrp: item.price * 1.2,
-                orderCount: 0,
-              }}
+              } as any}
             />
           ))}
         </div>
