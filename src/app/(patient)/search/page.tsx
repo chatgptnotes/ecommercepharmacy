@@ -6,10 +6,20 @@ import { Loader2, SlidersHorizontal } from 'lucide-react'
 import { PharmacyCard } from '@/components/patient/PharmacyCard'
 import { MedicineCard } from '@/components/patient/MedicineCard'
 import { SearchBar } from '@/components/patient/SearchBar'
+import { AdvancedFilters } from '@/components/patient/AdvancedFilters'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useSearchStore } from '@/store/searchStore'
 import type { MedicineWithPharmacy, PharmacyWithDistance } from '@/types/pharmacy'
+
+interface FilterState {
+  priceRange: [number, number];
+  brands: string[];
+  discount: number;
+  inStock: boolean;
+  prescription: 'all' | 'required' | 'not-required';
+  category: string[];
+}
 
 function SearchPageContent() {
   const searchParams = useSearchParams()
@@ -20,6 +30,15 @@ function SearchPageContent() {
   const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'price' | 'rating' | 'distance'>('price')
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filters, setFilters] = useState<FilterState>({
+    priceRange: [0, 1000],
+    brands: [],
+    discount: 0,
+    inStock: false,
+    prescription: 'all',
+    category: [],
+  })
 
   useEffect(() => {
     setQuery(query)
@@ -50,7 +69,8 @@ function SearchPageContent() {
     fetchResults()
   }, [query, type])
 
-  const sortedResults = results ? sortResults(results, sortBy) : null
+  const filteredResults = results ? applyFilters(results, filters) : null
+  const sortedResults = filteredResults ? sortResults(filteredResults, sortBy) : null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,38 +81,73 @@ function SearchPageContent() {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        {/* Results Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {query ? `Search results for "${query}"` : 'Search'}
-            </h1>
-            {sortedResults && (
-              <p className="text-sm text-gray-600 mt-1">
-                {sortedResults.total} {type === 'medicine' ? 'medicines' : 'pharmacies'} found
-              </p>
-            )}
+        <div className="flex gap-6">
+          {/* Desktop Filters - Always Visible */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="sticky top-24">
+              <AdvancedFilters
+                onFilterChange={setFilters}
+                initialFilters={filters}
+                isOpen={true}
+                onClose={() => {}}
+              />
+            </div>
           </div>
 
-          {/* Sort & Filter */}
-          {sortedResults && sortedResults.total > 0 && (
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="text-sm">
-                {type === 'medicine' ? 'Medicines' : 'Pharmacies'}
-              </Badge>
+          {/* Mobile Filters - Overlay */}
+          <AdvancedFilters
+            onFilterChange={setFilters}
+            initialFilters={filters}
+            isOpen={filtersOpen}
+            onClose={() => setFiltersOpen(false)}
+          />
 
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="price">Price: Low to High</option>
-                <option value="rating">Highest Rated</option>
-                <option value="distance">Nearest First</option>
-              </select>
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Results Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {query ? `Search results for "${query}"` : 'Search'}
+                </h1>
+                {sortedResults && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {sortedResults.total} {type === 'medicine' ? 'medicines' : 'pharmacies'} found
+                  </p>
+                )}
+              </div>
+
+              {/* Sort & Filter */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFiltersOpen(true)}
+                  className="lg:hidden"
+                >
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
+
+                {sortedResults && sortedResults.total > 0 && (
+                  <>
+                    <Badge variant="outline" className="text-sm hidden sm:inline-flex">
+                      {type === 'medicine' ? 'Medicines' : 'Pharmacies'}
+                    </Badge>
+
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="price">Price: Low to High</option>
+                      <option value="rating">Highest Rated</option>
+                      <option value="distance">Nearest First</option>
+                    </select>
+                  </>
+                )}
+              </div>
             </div>
-          )}
-        </div>
 
         {/* Loading State */}
         {loading && (
@@ -117,33 +172,89 @@ function SearchPageContent() {
           </div>
         )}
 
-        {/* Medicine Results */}
-        {!loading && sortedResults && type === 'medicine' && sortedResults.results?.length > 0 && (
-          <div className="space-y-4">
-            {groupMedicinesByName(sortedResults.results).map((group) => (
-              <div key={group.medicineName} className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold mb-4">{group.medicineName}</h3>
-                <div className="space-y-3">
-                  {group.medicines.map((medicine) => (
-                    <MedicineCard key={medicine.id} medicine={medicine} />
-                  ))}
-                </div>
+            {/* Medicine Results */}
+            {!loading && sortedResults && type === 'medicine' && sortedResults.results?.length > 0 && (
+              <div className="space-y-4">
+                {groupMedicinesByName(sortedResults.results).map((group) => (
+                  <div key={group.medicineName} className="bg-white rounded-lg p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">{group.medicineName}</h3>
+                    <div className="space-y-3">
+                      {group.medicines.map((medicine) => (
+                        <MedicineCard key={medicine.id} medicine={medicine} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* Pharmacy Results */}
-        {!loading && sortedResults && type === 'pharmacy' && sortedResults.results?.length > 0 && (
-          <div className="space-y-4">
-            {sortedResults.results.map((pharmacy: PharmacyWithDistance) => (
-              <PharmacyCard key={pharmacy.id} pharmacy={pharmacy} />
-            ))}
+            {/* Pharmacy Results */}
+            {!loading && sortedResults && type === 'pharmacy' && sortedResults.results?.length > 0 && (
+              <div className="space-y-4">
+                {sortedResults.results.map((pharmacy: PharmacyWithDistance) => (
+                  <PharmacyCard key={pharmacy.id} pharmacy={pharmacy} />
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
+}
+
+function applyFilters(results: any, filters: FilterState) {
+  if (!results.results) return results
+
+  let filtered = [...results.results]
+
+  if (results.type === 'medicine') {
+    // Price range filter
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 1000) {
+      filtered = filtered.filter(
+        (item) => item.price >= filters.priceRange[0] && item.price <= filters.priceRange[1]
+      )
+    }
+
+    // Brand filter
+    if (filters.brands.length > 0) {
+      filtered = filtered.filter((item) =>
+        filters.brands.some((brand) =>
+          item.manufacturer?.toLowerCase().includes(brand.toLowerCase())
+        )
+      )
+    }
+
+    // Discount filter
+    if (filters.discount > 0) {
+      filtered = filtered.filter((item) => {
+        const discount = item.discountPercent || 0
+        return discount >= filters.discount
+      })
+    }
+
+    // In stock filter
+    if (filters.inStock) {
+      filtered = filtered.filter((item) => item.inStock === true)
+    }
+
+    // Prescription filter
+    if (filters.prescription !== 'all') {
+      const requiresPrescription = filters.prescription === 'required'
+      filtered = filtered.filter((item) => item.requiresPrescription === requiresPrescription)
+    }
+
+    // Category filter
+    if (filters.category.length > 0) {
+      filtered = filtered.filter((item) =>
+        filters.category.some((cat) =>
+          item.category?.toLowerCase().includes(cat.toLowerCase())
+        )
+      )
+    }
+  }
+
+  return { ...results, results: filtered, total: filtered.length }
 }
 
 function sortResults(results: any, sortBy: string) {
