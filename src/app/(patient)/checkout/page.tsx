@@ -3,7 +3,7 @@
 // Checkout Page
 // Handles address, prescription upload, and payment
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cart';
 import { Button } from '@/components/ui/button';
@@ -44,8 +44,14 @@ export default function CheckoutPage() {
     resolver: zodResolver(addressSchema),
   });
 
+  // Redirect if cart is empty (client-side only)
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push('/cart');
+    }
+  }, [items.length, router]);
+
   if (items.length === 0) {
-    router.push('/cart');
     return null;
   }
 

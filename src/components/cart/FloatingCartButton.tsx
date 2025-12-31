@@ -7,7 +7,10 @@ import { useCartStore } from '@/store/cart';
 import Link from 'next/link';
 
 export function FloatingCartButton() {
-  const totalItems = useCartStore((state) => state.getTotalItems());
+  const items = useCartStore((state) => state.items);
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  console.log('FloatingCartButton render - items:', items.length, 'total:', totalItems);
 
   if (totalItems === 0) return null;
 

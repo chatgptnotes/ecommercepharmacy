@@ -39,6 +39,7 @@ export const useCartStore = create<CartStore>()(
       pharmacyId: null,
 
       addItem: (item) => {
+        console.log('Cart addItem called with:', item);
         const { items, pharmacyId } = get();
 
         // Check if adding from different pharmacy
@@ -46,13 +47,18 @@ export const useCartStore = create<CartStore>()(
           const confirmed = window.confirm(
             'Your cart contains items from another pharmacy. Clear cart and add this item?'
           );
-          if (!confirmed) return;
+          if (!confirmed) {
+            console.log('User cancelled switching pharmacy');
+            return;
+          }
 
           // Clear cart and add new item
+          console.log('Clearing cart and adding item from new pharmacy');
           set({
             items: [{ ...item, quantity: 1 }],
             pharmacyId: item.pharmacyId,
           });
+          console.log('Cart updated:', get().items);
           return;
         }
 
@@ -61,6 +67,7 @@ export const useCartStore = create<CartStore>()(
 
         if (existingItem) {
           // Increment quantity
+          console.log('Item already in cart, incrementing quantity');
           set({
             items: items.map((i) =>
               i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
@@ -68,11 +75,13 @@ export const useCartStore = create<CartStore>()(
           });
         } else {
           // Add new item
+          console.log('Adding new item to cart');
           set({
             items: [...items, { ...item, quantity: 1 }],
             pharmacyId: item.pharmacyId,
           });
         }
+        console.log('Cart state after add:', get().items);
       },
 
       removeItem: (medicineId) => {

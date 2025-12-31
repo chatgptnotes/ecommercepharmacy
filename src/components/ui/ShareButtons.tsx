@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Share2, Facebook, Twitter, Linkedin, Link2, Check } from 'lucide-react'
 import { Button } from './button'
 
@@ -14,8 +14,15 @@ interface ShareButtonsProps {
 export function ShareButtons({ url, title, description, className = '' }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState(url)
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.origin + url : url
+  // Set full URL on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setShareUrl(window.location.origin + url)
+    }
+  }, [url])
+
   const encodedUrl = encodeURIComponent(shareUrl)
   const encodedTitle = encodeURIComponent(title)
   const encodedDescription = description ? encodeURIComponent(description) : ''
