@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link"
 import {
   Upload,
@@ -18,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CategoryTabs } from "@/components/homepage/CategoryTabs"
+import { RecentlyViewed } from "@/components/patient/RecentlyViewed"
 
 // Category data
 const categories = [
@@ -351,6 +354,13 @@ export default function HomePage() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Recently Viewed Section */}
+      <section className="py-8">
+        <div className="container mx-auto px-4">
+          <RecentlyViewed limit={10} showClearButton={true} />
         </div>
       </section>
     </div>
