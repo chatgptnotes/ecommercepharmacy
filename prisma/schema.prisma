@@ -1,5 +1,5 @@
-// Pharmacy E-Commerce Database Schema
-// Based on 1mg clone requirements
+// MedsBharat.com - Zomato-Style Pharmacy Marketplace
+// Database Schema
 
 generator client {
   provider = "prisma-client-js"
@@ -17,25 +17,25 @@ model User {
   id            String    @id @default(cuid())
   email         String?   @unique
   phone         String?   @unique
-  password      String?
-  name          String?
-  image         String?
+  name          String
+  role          Role      @default(PATIENT)
+  passwordHash  String?
   emailVerified DateTime?
   phoneVerified DateTime?
-  role          Role      @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  addresses     Address[]
-  prescriptions Prescription[]
-  orders        Order[]
-  cart          Cart?
-  reviews       Review[]
-  wishlist      Wishlist[]
+  accounts  Account[]
+  sessions  Session[]
+  orders    Order[]
+  reviews   Review[]
+  addresses Address[]
+  pharmacy  Pharmacy? // 1:1 - If user is pharmacy owner
 
+  @@index([phone])
+  @@index([email])
+  @@index([role])
   @@map("users")
 }
 
@@ -79,202 +79,80 @@ model VerificationToken {
 }
 
 enum Role {
-  USER
-  ADMIN
-  PHARMACIST
+  PATIENT
+  PHARMACY_OWNER
+  PHARMACY_STAFF
+  SUPER_ADMIN
 }
 
 // ============================================
-// ADDRESS MANAGEMENT
+// PHARMACY MANAGEMENT
 // ============================================
 
-model Address {
-  id           String      @id @default(cuid())
-  userId       String
-  type         AddressType @default(HOME)
-  name         String      // Recipient name
-  phone        String
-  addressLine1 String
-  addressLine2 String?
-  landmark     String?
-  city         String
-  state        String
-  pincode      String
-  isDefault    Boolean     @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
-
-  @@map("addresses")
-}
-
-enum AddressType {
-  HOME
-  WORK
-  OTHER
-}
-
-// ============================================
-// PRODUCT CATALOG
-// ============================================
-
-model Category {
-  id          String     @id @default(cuid())
-  name        String
-  slug        String     @unique
-  description String?
-  image       String?
-  parentId    String?
-  isActive    Boolean    @default(true)
-  sortOrder   Int        @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
-  children Category[] @relation("CategoryToCategory")
-  products Product[]
-
-  @@map("categories")
-}
-
-model Brand {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  logo      String?
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  products Product[]
-
-  @@map("brands")
-}
-
-model Product {
-  id                   String   @id @default(cuid())
-  name                 String
-  slug                 String   @unique
-  description          String?  @db.Text
-  shortDescription     String?
-  sku                  String   @unique
-  categoryId           String
-  brandId              String?
-
-  // Pricing
-  mrp                  Decimal  @db.Decimal(10, 2)
-  sellingPrice         Decimal  @db.Decimal(10, 2)
-  costPrice            Decimal? @db.Decimal(10, 2)
-
-  // Stock
-  stockQuantity        Int      @default(0)
-  lowStockThreshold    Int      @default(10)
-
-  // Medicine specific
-  requiresPrescription Boolean  @default(false)
-  composition          String?  @db.Text
-  uses                 String?  @db.Text
-  sideEffects          String?  @db.Text
-  dosage               String?  @db.Text
-  storage              String?
-  manufacturer         String?
-  countryOfOrigin      String?  @default("India")
-  expiryDate           DateTime?
-
-  // Product details
-  packSize             String?  // e.g., "10 tablets", "100ml"
-  packType             String?  // e.g., "Strip", "Bottle", "Tube"
-
-  // Images (stored as JSON array)
-  images               Json     @default("[]")
-
-  // SEO
-  metaTitle            String?
-  metaDescription      String?
-
-  // Status
-  isActive             Boolean  @default(true)
-  isFeatured           Boolean  @default(false)
-
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+model Pharmacy {
+  id              String         @id @default(cuid())
+  userId          String         @unique
+  businessName    String
+  licenseNumber   String         @unique
+  gstNumber       String?
+  address         String
+  latitude        Float
+  longitude       Float
+  deliveryRadius  Int            @default(5) // in km
+  operatingHours  Json           // {mon: "9-21", tue: "9-21", ...}
+  status          PharmacyStatus @default(PENDING)
+  rating          Float          @default(0)
+  totalReviews    Int            @default(0)
+  totalOrders     Int            @default(0)
+  commissionRate  Float          @default(15) // percentage
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
   // Relations
-  category   Category    @relation(fields: [categoryId], references: [id])
-  brand      Brand?      @relation(fields: [brandId], references: [id])
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-  reviews    Review[]
-  wishlist   Wishlist[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicines Medicine[]
+  orders    Order[]
+  reviews   Review[]
 
-  @@index([categoryId])
-  @@index([brandId])
-  @@index([slug])
-  @@index([requiresPrescription])
-  @@map("products")
+  @@index([status])
+  @@index([latitude, longitude])
+  @@map("pharmacies")
 }
 
-// ============================================
-// PRESCRIPTION MANAGEMENT
-// ============================================
-
-model Prescription {
-  id          String              @id @default(cuid())
-  userId      String
-  imageUrl    String
-  notes       String?
-  status      PrescriptionStatus  @default(PENDING)
-  verifiedBy  String?
-  verifiedAt  DateTime?
-  rejectionReason String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
-
-  @@map("prescriptions")
-}
-
-enum PrescriptionStatus {
+enum PharmacyStatus {
   PENDING
   APPROVED
   REJECTED
-  EXPIRED
+  SUSPENDED
 }
 
 // ============================================
-// SHOPPING CART
+// MEDICINE CATALOG
 // ============================================
 
-model Cart {
-  id        String     @id @default(cuid())
-  userId    String?    @unique
-  sessionId String?    @unique // For guest users
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+model Medicine {
+  id           String   @id @default(cuid())
+  pharmacyId   String
+  name         String
+  genericName  String?
+  manufacturer String?
+  category     String // diabetes, blood-pressure, pain-relief, etc.
+  strength     String? // 500mg, 10ml, etc.
+  price        Float
+  mrp          Float?
+  available    Boolean  @default(true)
+  orderCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items CartItem[]
+  // Relations
+  pharmacy   Pharmacy    @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
 
-  @@map("carts")
-}
-
-model CartItem {
-  id        String   @id @default(cuid())
-  cartId    String
-  productId String
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([cartId, productId])
-  @@map("cart_items")
+  @@index([pharmacyId, available])
+  @@index([name])
+  @@index([category])
+  @@map("medicines")
 }
 
 // ============================================
@@ -282,146 +160,86 @@ model CartItem {
 // ============================================
 
 model Order {
-  id              String        @id @default(cuid())
-  orderNumber     String        @unique
-  userId          String
-  addressId       String
-  prescriptionId  String?
-
-  // Order totals
-  subtotal        Decimal       @db.Decimal(10, 2)
-  discount        Decimal       @default(0) @db.Decimal(10, 2)
-  deliveryFee     Decimal       @default(0) @db.Decimal(10, 2)
-  tax             Decimal       @default(0) @db.Decimal(10, 2)
-  total           Decimal       @db.Decimal(10, 2)
-
-  // Coupon
-  couponId        String?
-  couponCode      String?
-
-  // Payment
-  paymentMethod   PaymentMethod
-  paymentStatus   PaymentStatus @default(PENDING)
-  razorpayOrderId String?
-  razorpayPaymentId String?
-
-  // Delivery
-  deliverySlot    String?
-  deliveryNotes   String?
-
-  // Status
-  status          OrderStatus   @default(PENDING)
-
-  // Tracking
-  trackingNumber  String?
-  shippedAt       DateTime?
-  deliveredAt     DateTime?
-  cancelledAt     DateTime?
-  cancellationReason String?
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                 String        @id @default(cuid())
+  orderNumber        String        @unique
+  patientId          String
+  pharmacyId         String
+  status             OrderStatus   @default(PLACED)
+  deliveryAddress    String
+  deliveryLatitude   Float
+  deliveryLongitude  Float
+  contactPhone       String
+  specialInstructions String?
+  subtotal           Float
+  deliveryFee        Float         @default(0)
+  totalAmount        Float
+  prescriptionUrl    String
+  prescriptionOCR    Json? // OCR extracted data
+  paymentMethod      PaymentMethod
+  paymentStatus      PaymentStatus @default(PENDING)
+  razorpayOrderId    String?
+  razorpayPaymentId  String?
+  placedAt           DateTime      @default(now())
+  acceptedAt         DateTime?
+  preparingAt        DateTime?
+  outForDeliveryAt   DateTime?
+  deliveredAt        DateTime?
+  cancelledAt        DateTime?
+  routingAttempts    Int           @default(0)
+  previousPharmacyIds Json?        // Array of pharmacy IDs that rejected
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   // Relations
-  user         User          @relation(fields: [userId], references: [id])
-  address      Address       @relation(fields: [addressId], references: [id])
-  prescription Prescription? @relation(fields: [prescriptionId], references: [id])
-  coupon       Coupon?       @relation(fields: [couponId], references: [id])
-  items        OrderItem[]
-  statusHistory OrderStatusHistory[]
+  patient  User        @relation(fields: [patientId], references: [id])
+  pharmacy Pharmacy    @relation(fields: [pharmacyId], references: [id])
+  items    OrderItem[]
+  review   Review?
 
-  @@index([userId])
-  @@index([orderNumber])
+  @@index([patientId])
+  @@index([pharmacyId])
   @@index([status])
+  @@index([placedAt])
+  @@index([orderNumber])
   @@map("orders")
 }
 
 model OrderItem {
-  id              String  @id @default(cuid())
-  orderId         String
-  productId       String
-  productName     String  // Snapshot at time of order
-  productImage    String? // Snapshot at time of order
-  quantity        Int
-  mrp             Decimal @db.Decimal(10, 2)
-  sellingPrice    Decimal @db.Decimal(10, 2)
-  total           Decimal @db.Decimal(10, 2)
+  id         String  @id @default(cuid())
+  orderId    String
+  medicineId String
+  quantity   Int     @default(1)
+  price      Float // price at time of order
 
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  medicine Medicine @relation(fields: [medicineId], references: [id])
 
+  @@index([orderId])
+  @@index([medicineId])
   @@map("order_items")
 }
 
-model OrderStatusHistory {
-  id        String      @id @default(cuid())
-  orderId   String
-  status    OrderStatus
-  notes     String?
-  createdAt DateTime    @default(now())
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@map("order_status_history")
-}
-
 enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PROCESSING
-  PACKED
-  SHIPPED
+  PLACED
+  ACCEPTED
+  PREPARING
   OUT_FOR_DELIVERY
   DELIVERED
   CANCELLED
-  RETURNED
-  REFUNDED
+  REJECTED
 }
 
 enum PaymentMethod {
-  COD
   UPI
   CARD
-  NETBANKING
-  WALLET
+  PAY_AT_PHARMACY
 }
 
 enum PaymentStatus {
   PENDING
-  PAID
+  SUCCESS
   FAILED
   REFUNDED
-}
-
-// ============================================
-// COUPONS & DISCOUNTS
-// ============================================
-
-model Coupon {
-  id              String       @id @default(cuid())
-  code            String       @unique
-  description     String?
-  discountType    DiscountType
-  discountValue   Decimal      @db.Decimal(10, 2)
-  minOrderValue   Decimal?     @db.Decimal(10, 2)
-  maxDiscount     Decimal?     @db.Decimal(10, 2)
-  usageLimit      Int?
-  usageCount      Int          @default(0)
-  userLimit       Int?         @default(1) // Per user usage limit
-  validFrom       DateTime
-  validUntil      DateTime
-  isActive        Boolean      @default(true)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  orders Order[]
-
-  @@map("coupons")
-}
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED
 }
 
 // ============================================
@@ -429,90 +247,45 @@ enum DiscountType {
 // ============================================
 
 model Review {
-  id               String   @id @default(cuid())
-  userId           String
-  productId        String
-  rating           Int      // 1-5
-  title            String?
-  comment          String?  @db.Text
-  isVerifiedPurchase Boolean @default(false)
-  isApproved       Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id         String   @id @default(cuid())
+  orderId    String   @unique
+  patientId  String
+  pharmacyId String
+  rating     Int // 1-5
+  comment    String?
+  createdAt  DateTime @default(now())
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  patient  User     @relation(fields: [patientId], references: [id])
+  pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id])
 
-  @@unique([userId, productId])
+  @@index([pharmacyId])
+  @@index([rating])
+  @@index([createdAt])
   @@map("reviews")
 }
 
 // ============================================
-// WISHLIST
+// ADDRESSES
 // ============================================
 
-model Wishlist {
+model Address {
   id        String   @id @default(cuid())
   userId    String
-  productId String
-  createdAt DateTime @default(now())
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, productId])
-  @@map("wishlists")
-}
-
-// ============================================
-// BANNERS & PROMOTIONS
-// ============================================
-
-model Banner {
-  id          String   @id @default(cuid())
-  title       String
-  image       String
-  link        String?
-  position    String   @default("home") // home, category, etc.
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  startDate   DateTime?
-  endDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("banners")
-}
-
-// ============================================
-// SETTINGS & CONFIGURATION
-// ============================================
-
-model Setting {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  value     String   @db.Text
-  type      String   @default("string") // string, number, boolean, json
+  label     String // Home, Work, etc.
+  street    String
+  city      String
+  state     String
+  pincode   String
+  latitude  Float
+  longitude Float
+  isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("settings")
-}
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// ============================================
-// PINCODE SERVICEABILITY
-// ============================================
-
-model Pincode {
-  id              String   @id @default(cuid())
-  pincode         String   @unique
-  city            String
-  state           String
-  isServiceable   Boolean  @default(true)
-  deliveryDays    Int      @default(3)
-  codAvailable    Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@map("pincodes")
+  @@index([userId])
+  @@index([userId, isDefault])
+  @@map("addresses")
 }

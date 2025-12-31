@@ -9,6 +9,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"] || "postgresql://placeholder:placeholder@localhost:5432/placeholder",
+    // Use DIRECT_DATABASE_URL for migrations (port 5432, not pooled)
+    // Falls back to DATABASE_URL if DIRECT_DATABASE_URL is not set
+    url: process.env["DIRECT_DATABASE_URL"] || process.env["DATABASE_URL"] || "postgresql://placeholder:placeholder@localhost:5432/placeholder",
   },
 });
