@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useCartStore } from "@/store/cart"
 
 const categories = [
   { name: "Medicines", href: "/products?category=medicines" },
@@ -30,10 +31,11 @@ export default function Header() {
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { getTotalItems } = useCartStore()
 
   // TODO: Replace with actual auth state
   const isLoggedIn = false
-  const cartItemCount = 0
+  const cartItemCount = getTotalItems()
 
   // Close dropdown when clicking outside
   useEffect(() => {

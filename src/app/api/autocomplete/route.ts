@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: Request) {
   try {
@@ -15,64 +15,33 @@ export async function GET(request: Request) {
     const searchTerm = query.trim()
 
     // Search medicines
-    const medicines = await prisma.medicine
-      .findMany({
-        where: {
-          OR: [
-            { name: { contains: searchTerm, mode: 'insensitive' } },
-            { manufacturer: { contains: searchTerm, mode: 'insensitive' } },
-            { category: { contains: searchTerm, mode: 'insensitive' } },
-          ],
-          available: true,
-          pharmacy: {
-            status: 'APPROVED',
-          },
-        },
-        select: {
-          id: true,
-          name: true,
-          manufacturer: true,
-          category: true,
-        },
-        take: 8,
-        orderBy: {
-          orderCount: 'desc',
-        },
-      })
-      .catch(() => [])
+    const { data: medicines } = await supabase
+      .from('medicines')
+      .select('id, name, manufacturer, category')
+      .or(`name.ilike.%${searchTerm}%,manufacturer.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%`)
+      .eq('available', true)
+      .order('orderCount', { ascending: false })
+      .limit(8)
 
     // Search pharmacies
-    const pharmacies = await prisma.pharmacy
-      .findMany({
-        where: {
-          businessName: {
-            contains: searchTerm,
-            mode: 'insensitive',
-          },
-          status: 'APPROVED',
-        },
-        select: {
-          id: true,
-          businessName: true,
-          address: true,
-        },
-        take: 5,
-        orderBy: {
-          rating: 'desc',
-        },
-      })
-      .catch(() => [])
+    const { data: pharmacies } = await supabase
+      .from('pharmacies')
+      .select('id, businessName, address')
+      .ilike('businessName', `%${searchTerm}%`)
+      .eq('status', 'APPROVED')
+      .order('rating', { ascending: false })
+      .limit(5)
 
     // Format results
     const suggestions = [
-      ...medicines.map((med) => ({
+      ...(medicines || []).map((med: any) => ({
         id: med.id,
         name: med.name,
         type: 'medicine' as const,
         subtitle: `${med.manufacturer} • ${med.category}`,
         category: med.category,
       })),
-      ...pharmacies.map((pharm) => ({
+      ...(pharmacies || []).map((pharm: any) => ({
         id: pharm.id,
         name: pharm.businessName,
         type: 'pharmacy' as const,
