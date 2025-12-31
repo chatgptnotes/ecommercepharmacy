@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,67 +20,83 @@ export async function GET(request: NextRequest) {
 
     // Search medicines across all pharmacies
     if (type === 'medicine' || !type) {
-      const medicines = await prisma.medicine.findMany({
-        where: {
-          name: { contains: query, mode: 'insensitive' },
-          available: true,
-          pharmacy: { status: 'APPROVED' },
-        },
-        include: {
-          pharmacy: {
-            select: {
-              id: true,
-              businessName: true,
-              rating: true,
-              address: true,
-              latitude: true,
-              longitude: true,
-            },
-          },
-        },
-        take: 50,
-        orderBy: [
-          { orderCount: 'desc' }, // Popular first
-          { price: 'asc' },        // Then by price
-        ],
-      })
+      const { data: medicines, error } = await supabase
+        .from('medicines')
+        .select(`
+          id,
+          name,
+          genericName,
+          manufacturer,
+          category,
+          strength,
+          price,
+          mrp,
+          available,
+          orderCount,
+          pharmacy:pharmacies!pharmacyId (
+            id,
+            businessName,
+            rating,
+            address,
+            latitude,
+            longitude
+          )
+        `)
+        .ilike('name', `%${query}%`)
+        .eq('available', true)
+        .eq('pharmacy.status', 'APPROVED')
+        .order('orderCount', { ascending: false })
+        .order('price', { ascending: true })
+        .limit(50)
+
+      if (error) {
+        console.error('Supabase error:', error)
+        return NextResponse.json(
+          { error: 'Database query failed' },
+          { status: 500 }
+        )
+      }
 
       return NextResponse.json({
         type: 'medicine',
-        results: medicines,
-        total: medicines.length,
+        results: medicines || [],
+        total: medicines?.length || 0,
       })
     }
 
     // Search pharmacies
     if (type === 'pharmacy') {
-      const pharmacies = await prisma.pharmacy.findMany({
-        where: {
-          businessName: { contains: query, mode: 'insensitive' },
-          status: 'APPROVED',
-        },
-        select: {
-          id: true,
-          businessName: true,
-          address: true,
-          latitude: true,
-          longitude: true,
-          rating: true,
-          totalReviews: true,
-          totalOrders: true,
-          deliveryRadius: true,
-        },
-        take: 20,
-        orderBy: [
-          { rating: 'desc' },
-          { totalOrders: 'desc' },
-        ],
-      })
+      const { data: pharmacies, error } = await supabase
+        .from('pharmacies')
+        .select(`
+          id,
+          businessName,
+          address,
+          latitude,
+          longitude,
+          rating,
+          totalReviews,
+          totalOrders,
+          deliveryRadius
+        `)
+        .ilike('businessName', `%${query}%`)
+        .eq('status', 'APPROVED')
+        .order('rating', { ascending: false })
+        .order('totalOrders', { ascending: false })
+        .limit(20)
+
+      if (error) {
+        console.error('Supabase error:', error)
+        return NextResponse.json(
+          { error: 'Database query failed' },
+          { status: 500 }
+        )
+      }
 
       return NextResponse.json({
         type: 'pharmacy',
-        results: pharmacies,
-        total: pharmacies.length,
+        results: pharmacies || [],
+        total: pharmacies?.length || 0,
       })
     }
 
