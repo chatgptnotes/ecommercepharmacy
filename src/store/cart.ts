@@ -19,12 +19,14 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[];
   pharmacyId: string | null; // Cart locked to single pharmacy
+  _hasHydrated: boolean;
 
   // Actions
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (medicineId: string) => void;
   updateQuantity: (medicineId: string, quantity: number) => void;
   clearCart: () => void;
+  setHasHydrated: (state: boolean) => void;
 
   // Computed
   getTotalItems: () => number;
@@ -37,6 +39,11 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       pharmacyId: null,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => {
+        set({ _hasHydrated: state });
+      },
 
       addItem: (item) => {
         console.log('Cart addItem called with:', item);
@@ -128,6 +135,9 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'medsbharat-cart',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

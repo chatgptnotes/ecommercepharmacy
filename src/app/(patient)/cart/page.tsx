@@ -13,12 +13,26 @@ import Link from 'next/link';
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, updateQuantity, removeItem, getSubtotal, clearCart } =
+  const { items, updateQuantity, removeItem, getSubtotal, clearCart, _hasHydrated } =
     useCartStore();
 
   const subtotal = getSubtotal();
   const deliveryFee = subtotal > 0 ? 50 : 0;
   const total = subtotal + deliveryFee;
+
+  // Show loading state while hydrating from localStorage
+  if (!_hasHydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-24 h-24 mb-6">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+          </div>
+          <p className="text-gray-600">Loading cart...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
