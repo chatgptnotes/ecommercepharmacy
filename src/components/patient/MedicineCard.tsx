@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { Plus, Minus, ShoppingCart } from 'lucide-react'
+import { Plus, Minus, ShoppingCart, Heart } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, calculateDiscount } from '@/lib/utils'
 import { useCartStore } from '@/store/cart'
+import { useWishlistStore } from '@/store/wishlistStore'
 import type { Medicine } from '@/types/pharmacy'
 
 interface MedicineCardProps {
@@ -20,10 +21,30 @@ interface MedicineCardProps {
 
 export function MedicineCard({ medicine }: MedicineCardProps) {
   const { addItem, items, updateQuantity } = useCartStore()
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore()
   const cartItem = items.find(item => item.id === medicine.id)
   const itemCount = cartItem?.quantity || 0
+  const inWishlist = isInWishlist(medicine.id)
 
   const discount = medicine.mrp ? calculateDiscount(medicine.mrp, medicine.price) : 0
+
+  const handleWishlistToggle = () => {
+    if (!medicine.pharmacy) return
+
+    if (inWishlist) {
+      removeFromWishlist(medicine.id)
+    } else {
+      addToWishlist({
+        id: medicine.id,
+        name: medicine.name,
+        price: medicine.price,
+        manufacturer: medicine.manufacturer || '',
+        category: medicine.category,
+        pharmacyId: medicine.pharmacy.id,
+        pharmacyName: medicine.pharmacy.businessName,
+      })
+    }
+  }
 
   const handleAddToCart = () => {
     if (!medicine.pharmacy) return
@@ -41,7 +62,20 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
   }
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card className="p-4 hover:shadow-md transition-shadow relative">
+      {/* Wishlist Button */}
+      <button
+        onClick={handleWishlistToggle}
+        className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
+        aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+      >
+        <Heart
+          className={`h-5 w-5 ${
+            inWishlist ? 'fill-red-500 text-red-500' : 'text-gray-400'
+          }`}
+        />
+      </button>
+
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h3 className="font-semibold text-lg mb-1">{medicine.name}</h3>

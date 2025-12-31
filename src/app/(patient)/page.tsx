@@ -6,6 +6,7 @@ import { RecentlyViewed } from '@/components/homepage/RecentlyViewed'
 import { TrendingProducts } from '@/components/homepage/TrendingProducts'
 import { NewArrivals } from '@/components/homepage/NewArrivals'
 import { Newsletter } from '@/components/homepage/Newsletter'
+import { DealOfTheDay } from '@/components/homepage/DealOfTheDay'
 
 export default function PatientHomePage() {
   return (
@@ -47,6 +48,9 @@ export default function PatientHomePage() {
 
       {/* New Arrivals */}
       <NewArrivals />
+
+      {/* Deal of the Day */}
+      <DealOfTheDay />
 
       {/* Category Tabs with Products */}
       <CategoryTabs />
