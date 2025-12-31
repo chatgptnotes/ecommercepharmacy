@@ -36,7 +36,7 @@ export function SearchBar({ placeholder, className }: SearchBarProps) {
             value={localQuery}
             onChange={(e) => setLocalQuery(e.target.value)}
             placeholder={placeholder || 'Search medicine or pharmacy...'}
-            className="pl-10 pr-4 py-6 text-lg border-2 border-gray-200 focus:border-blue-500"
+            className="pl-10 pr-4 py-6 text-lg text-gray-900 border-2 border-gray-200 focus:border-blue-500"
           />
         </div>
         <Button type="submit" size="lg" className="px-8">
