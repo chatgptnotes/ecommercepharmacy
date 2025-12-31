@@ -3,6 +3,9 @@ import { Search, MapPin, Clock, ShieldCheck } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { CategoryTabs } from '@/components/homepage/CategoryTabs'
 import { RecentlyViewed } from '@/components/homepage/RecentlyViewed'
+import { TrendingProducts } from '@/components/homepage/TrendingProducts'
+import { NewArrivals } from '@/components/homepage/NewArrivals'
+import { Newsletter } from '@/components/homepage/Newsletter'
 
 export default function PatientHomePage() {
   return (
@@ -38,6 +41,12 @@ export default function PatientHomePage() {
 
       {/* Recently Viewed */}
       <RecentlyViewed />
+
+      {/* Trending Products */}
+      <TrendingProducts />
+
+      {/* New Arrivals */}
+      <NewArrivals />
 
       {/* Category Tabs with Products */}
       <CategoryTabs />
@@ -188,6 +197,9 @@ export default function PatientHomePage() {
           </div>
         </div>
       </section>
+
+      {/* Newsletter Signup */}
+      <Newsletter />
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
