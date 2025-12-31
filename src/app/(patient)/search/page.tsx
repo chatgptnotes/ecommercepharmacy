@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Loader2, SlidersHorizontal } from 'lucide-react'
 import { PharmacyCard } from '@/components/patient/PharmacyCard'
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { useSearchStore } from '@/store/searchStore'
 import type { MedicineWithPharmacy, PharmacyWithDistance } from '@/types/pharmacy'
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   const type = (searchParams.get('type') as 'medicine' | 'pharmacy') || 'medicine'
@@ -183,4 +183,18 @@ function groupMedicinesByName(medicines: MedicineWithPharmacy[]) {
     medicineName,
     medicines: medicines.sort((a, b) => a.price - b.price), // Cheapest first
   }))
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      }
+    >
+      <SearchPageContent />
+    </Suspense>
+  )
 }
