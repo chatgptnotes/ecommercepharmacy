@@ -1,6 +1,7 @@
 import { SearchBar } from '@/components/patient/SearchBar'
 import { Search, MapPin, Clock, ShieldCheck } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { CategoryTabs } from '@/components/homepage/CategoryTabs'
 
 export default function PatientHomePage() {
   return (
@@ -34,8 +35,11 @@ export default function PatientHomePage() {
         </div>
       </section>
 
+      {/* Category Tabs with Products */}
+      <CategoryTabs />
+
       {/* How It Works */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
             How It Works
