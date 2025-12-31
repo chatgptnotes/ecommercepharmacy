@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { CategoryTabs } from "@/components/homepage/CategoryTabs"
 
 // Category data
 const categories = [
@@ -174,28 +175,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-8 md:py-12">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Shop by Category</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-4">
-            {categories.map((category) => (
-              <Link
-                key={category.name}
-                href={category.href}
-                className="group text-center"
-              >
-                <div className={`${category.color} h-16 w-16 mx-auto rounded-full flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <category.icon className="h-8 w-8" />
-                </div>
-                <p className="mt-2 text-sm font-medium text-gray-700 group-hover:text-orange-500">
-                  {category.name}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Category Tabs with Products */}
+      <CategoryTabs />
 
       {/* Offers Banner */}
       <section className="py-6 bg-gray-100">
