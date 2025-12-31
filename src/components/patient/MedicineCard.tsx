@@ -5,6 +5,7 @@ import { Plus, Minus, ShoppingCart, Heart } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ShareButtons } from '@/components/ui/ShareButtons'
 import { formatPrice, calculateDiscount } from '@/lib/utils'
 import { useCartStore } from '@/store/cart'
 import { useWishlistStore } from '@/store/wishlistStore'
@@ -104,7 +105,7 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
             </Link>
           )}
 
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 mb-3">
             <span className="text-2xl font-bold text-gray-900">
               {formatPrice(medicine.price)}
             </span>
@@ -119,6 +120,13 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
               </>
             )}
           </div>
+
+          {/* Share Button */}
+          <ShareButtons
+            url={`/medicine/${medicine.id}`}
+            title={`${medicine.name} - ${formatPrice(medicine.price)}`}
+            description={`Buy ${medicine.name} from ${medicine.pharmacy?.businessName || 'MedsBharat'}`}
+          />
         </div>
 
         <div className="flex flex-col items-end gap-2">
