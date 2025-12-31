@@ -15,14 +15,15 @@ interface SearchBarProps {
 export function SearchBar({ placeholder, className }: SearchBarProps) {
   const router = useRouter()
   const { query, setQuery, searchType } = useSearchStore()
-  const [localQuery, setLocalQuery] = useState(query)
+  const [localQuery, setLocalQuery] = useState('')
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (localQuery.trim().length < 2) return
+    const searchQuery = localQuery.trim()
+    if (searchQuery.length < 2) return
 
-    setQuery(localQuery)
-    router.push(`/search?q=${encodeURIComponent(localQuery)}&type=${searchType}`)
+    setQuery(searchQuery)
+    router.push(`/search?q=${encodeURIComponent(searchQuery)}&type=${searchType}`)
   }
 
   return (
