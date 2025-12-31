@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Search,
   ShoppingCart,
@@ -27,11 +27,29 @@ const categories = [
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   // TODO: Replace with actual auth state
   const isLoggedIn = false
   const cartItemCount = 0
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryDropdownOpen(false)
+      }
+    }
+
+    if (isCategoryDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }
+  }, [isCategoryDropdownOpen])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -185,11 +203,42 @@ export default function Header() {
         <div className="container mx-auto px-4">
           <ul className="flex items-center gap-8 py-3">
             <li>
-              <button className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-orange-500">
-                <Menu className="h-4 w-4" />
-                All Categories
-                <ChevronDown className="h-4 w-4" />
-              </button>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                  className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors"
+                >
+                  <Menu className="h-4 w-4" />
+                  All Categories
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isCategoryDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div className="py-2">
+                      {categories.map((category, index) => (
+                        <Link
+                          key={category.name}
+                          href={category.href}
+                          onClick={() => setIsCategoryDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"
+                        >
+                          <span className="material-icons text-gray-500 text-lg">
+                            {index === 0 ? 'medication' :
+                             index === 1 ? 'health_and_safety' :
+                             index === 2 ? 'face' :
+                             index === 3 ? 'child_care' :
+                             index === 4 ? 'monitor_heart' :
+                             'spa'}
+                          </span>
+                          <span>{category.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </li>
             {categories.map((category) => (
               <li key={category.name}>
