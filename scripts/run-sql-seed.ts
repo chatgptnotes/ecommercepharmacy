@@ -25,7 +25,9 @@ async function runSeedSQL() {
 
     console.log('✅ Seed completed successfully!');
     console.log('\nResults:');
-    console.log(result[result.length - 1].rows[0]); // Last query result (SELECT summary)
+    if (Array.isArray(result) && result.length > 0) {
+      console.log(result[result.length - 1].rows[0]); // Last query result (SELECT summary)
+    }
 
   } catch (error) {
     console.error('❌ Error running seed:', error);

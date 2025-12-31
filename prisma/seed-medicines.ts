@@ -494,7 +494,7 @@ async function main() {
 
   // Create medicines for each pharmacy with varying prices and stock
   for (const pharmacy of pharmacies) {
-    console.log(`\n📦 Adding medicines to: ${pharmacy.name}`);
+    console.log(`\n📦 Adding medicines to: ${pharmacy.businessName}`);
 
     for (const medicine of commonMedicines) {
       // Randomize stock and pricing for variety
@@ -515,15 +515,10 @@ async function main() {
           name: medicine.name,
           manufacturer: medicine.manufacturer,
           category: medicine.category,
-          description: medicine.description,
-          packSize: medicine.packSize,
+          strength: medicine.packSize, // Map packSize to strength field
           price: price,
           mrp: mrp,
-          discountPercent: discountPercent,
-          inStock: hasStock,
-          stockQuantity: hasStock ? Math.floor(Math.random() * 100) + 20 : 0,
-          requiresPrescription: medicine.requiresPrescription,
-          ingredients: medicine.ingredients,
+          available: hasStock,
           pharmacyId: pharmacy.id,
         },
       });
