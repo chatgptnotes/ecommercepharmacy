@@ -13,6 +13,7 @@
     "docker:logs": "docker-compose logs -f postgres",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:medicines": "tsx prisma/seed-medicines.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset --force && pnpm db:seed",
     "setup": "pnpm docker:up && sleep 3 && pnpm db:migrate && pnpm db:seed"
