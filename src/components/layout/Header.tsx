@@ -11,7 +11,8 @@ import {
   MapPin,
   ChevronDown,
   Heart,
-  Package
+  Package,
+  Phone
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -78,7 +79,10 @@ export default function Header() {
               Offers
             </Link>
             <span>|</span>
-            <span>Need Help? Call: 1800-XXX-XXXX</span>
+            <a href="tel:+918412030400" className="flex items-center gap-1 hover:underline">
+              <Phone className="h-3 w-3" />
+              <span>Hope Pharmacy: +91 84120 30400</span>
+            </a>
           </div>
         </div>
       </div>
