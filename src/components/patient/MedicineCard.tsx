@@ -21,13 +21,22 @@ interface MedicineCardProps {
 }
 
 export function MedicineCard({ medicine }: MedicineCardProps) {
-  const { addItem, items, updateQuantity } = useCartStore()
+  const { addItem, items, updateQuantity, _hasHydrated } = useCartStore()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore()
   const cartItem = items.find(item => item.id === medicine.id)
   const itemCount = cartItem?.quantity || 0
   const inWishlist = isInWishlist(medicine.id)
 
   const discount = medicine.mrp ? calculateDiscount(medicine.mrp, medicine.price) : 0
+
+  // Debug logging
+  console.log('MedicineCard render:', {
+    medicineName: medicine.name,
+    hasPharmacy: !!medicine.pharmacy,
+    pharmacyData: medicine.pharmacy,
+    hasHydrated: _hasHydrated,
+    itemCount
+  })
 
   const handleWishlistToggle = () => {
     if (!medicine.pharmacy) return
@@ -48,13 +57,30 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
   }
 
   const handleAddToCart = () => {
+    console.log('handleAddToCart called for:', medicine.name)
+    console.log('Cart hydration status:', _hasHydrated)
+    console.log('Medicine pharmacy data:', medicine.pharmacy)
+
+    if (!_hasHydrated) {
+      console.error('Cart not hydrated yet')
+      alert('Cart is still loading. Please wait a moment and try again.')
+      return
+    }
+
     if (!medicine.pharmacy) {
       console.error('No pharmacy data available for medicine:', medicine)
-      alert('Unable to add to cart. Please try again.')
+      alert('Unable to add to cart - missing pharmacy information. Please try searching again.')
       return
     }
 
     try {
+      console.log('Calling addItem with:', {
+        id: medicine.id,
+        name: medicine.name,
+        pharmacyId: medicine.pharmacy.id,
+        pharmacyName: medicine.pharmacy.businessName,
+      })
+
       addItem({
         id: medicine.id,
         name: medicine.name,
@@ -65,7 +91,7 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
         strength: medicine.strength,
         manufacturer: medicine.manufacturer,
       })
-      console.log('Item added to cart:', medicine.name)
+      console.log('Successfully added item to cart:', medicine.name)
     } catch (error) {
       console.error('Error adding to cart:', error)
       alert('Failed to add item to cart. Please try again.')
